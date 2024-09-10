@@ -1,15 +1,22 @@
 package GUI;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 
 
@@ -20,10 +27,20 @@ public class Frame extends JFrame implements ActionListener {
 	JPanel panel2 = new JPanel(); //panel on top right of frame
 	JPanel panel3 = new JPanel(); //panel on bottom of frame spanning the entire width of frame
 	
-	JLabel label1 = new JLabel();
+	JLabel title = new JLabel(); //Used for the title on any page
+	JLabel inputFN = new JLabel(); //label for inputing first name on Student Input page
+	JLabel inputLN = new JLabel(); //label for inputting last name on Student Input page
 	
-	JButton button1 = new JButton();
-	JButton button2 = new JButton();
+	JButton addStudent = new JButton(); //button to add a student. This button should only exist on the home page.
+	JButton homeButton = new JButton(); //button to get back to the home page. This button should not exist on the home page. 
+	JButton button3 = new JButton(); 
+	JButton submit = new JButton(); //button used to submit student data on the Student Input page
+	
+	ImageIcon home = new ImageIcon("Home.png"); //image for the home button
+	
+	JTextField firstName = new JTextField();
+	JTextField lastName = new JTextField();
+	
 	
 	
 	
@@ -54,9 +71,10 @@ public class Frame extends JFrame implements ActionListener {
 		this.add(panel2);
 		this.add(panel3);
 		
-		
 	}//end constructor
 	
+	
+	//getters
 	public JPanel getPanel1(){
 		return panel1;
 	}//end getPanel1
@@ -69,58 +87,149 @@ public class Frame extends JFrame implements ActionListener {
 		return panel3;
 	}//end getPanel3
 	
-	public void homeScreen(){
+	
+	
+	
+	
+	public void homeScreen(){  //creates a home screen UI
 		
 		//buttons
-		button1.setText("New Student");
-		button1.setBounds(45, 135, 150, 55); //x, y, width, height
-		button1.addActionListener(this);
+		addStudent.setText("Add Student");
+		addStudent.setBounds(45, 135, 150, 55); //x, y, width, height
+		addStudent.addActionListener(this);
+		addStudent.setFocusable(false);
 		
-		button2.setText("Place Holder");
-		button2.setBounds(45,135,150,55); //x, y ,width, height
+		button3.setText("Place Holder");
+		button3.setBounds(45,135,150,55); //x, y ,width, height
+		button3.setFocusable(false);
 		
 		//label
-		label1.setText("HOME PAGE");
-		label1.setFont(new Font("Garamond", Font.PLAIN, 35)); //name of font, style of font(plain, bold, italic), font size
-		label1.setBounds(140, 0, 300, 200);
-		label1.setHorizontalTextPosition(JLabel.CENTER);
-		label1.setVerticalTextPosition(JLabel.CENTER);
-		label1.setForeground(Color.black);
-		label1.setBackground(new Color(253,253,150)); //sets the background color of the label
-		label1.setOpaque(true); //allows the background to be seen
+		title.setText("HOME PAGE");
+		title.setFont(new Font("Garamond", Font.PLAIN, 35)); //name of font, style of font(plain, bold, italic), font size
+		title.setBounds(140, 0, 300, 200);
+		title.setForeground(Color.black);
+		title.setBackground(new Color(253,253,150)); //sets the background color of the label
+		title.setOpaque(true); //allows the background to be seen
 		
 		
 		//adding to panels
-		this.getPanel1().add(button1);
-		this.getPanel2().add(button2);
-		this.getPanel3().add(label1);
+		this.getPanel1().add(addStudent); //adding the addStudent button to panel 1 (the bottom left panel)
+		this.getPanel2().add(button3);
+		this.getPanel3().add(title); //adding lbel1 to top of the frame(panel 3)
 		
 	}//end homeScreen
 	
-	public void studentInput() {
-		label1.setText("Input New Student Data");
-		label1.setFont(new Font("Garamond", Font.PLAIN, 25));
-		label1.setBounds(getBounds());
-		label1.setBounds(125,0,300,200);
-		label1.setForeground(Color.black);
-		label1.setBackground(new Color(253,253,150));
-		label1.setOpaque(true);
+	
+	
+	public void studentInput() {  //brings user to a page to input student data
+		//title on UI page
+		title.setText("Input New Student Data");
+		title.setFont(new Font("Garamond", Font.PLAIN, 25));
+		title.setBounds(getBounds());
+		title.setBounds(125,0,300,200);
+		title.setForeground(Color.black);
+		title.setBackground(new Color(253,253,150));
+		title.setOpaque(true);
 		
 		
-		this.getPanel3().add(label1);
 		
+		//buttons on Student Input Page
+		//homeButton.setText("Home");
+		homeButton.setPreferredSize(new Dimension(40,40)); //x,y,width,height
+		homeButton.setFocusable(false);
+		homeButton.addActionListener(this);
+		homeButton.setIcon(home);
+		
+		submit.setText("Submit");
+		submit.setLocation(0,200);
+		submit.addActionListener(this);
+		submit.setPreferredSize(new Dimension(90,30));
+		
+		
+		//Labels
+		inputFN.setText("Enter Student's First Name: ");
+		inputFN.setForeground(Color.black);
+		inputFN.setOpaque(true);
+		inputFN.setBackground(new Color(253,253,150));
+		//inputFN.setBounds(0, 0, 80, 80);
+		//inputFN.setLocation(0,0);
+		
+		inputLN.setText("Enter Student's Last Name: ");
+		inputLN.setForeground(Color.black);
+		inputLN.setOpaque(true);
+		inputLN.setBackground(new Color(253,253,150));
+		//inputLN.setBounds(0,50,80,80);
+		//inputLN.setLocation(0,60);
+		
+		
+		//text fields on Student Input page
+		firstName.setPreferredSize(new Dimension(150,40));
+		//firstName.setLocation(0, 50);
+		lastName.setPreferredSize(new Dimension(150,40));
+		//lastName.setLocation(0,100);
+		
+		
+		
+		//components on each panel
+		this.getPanel3().add(homeButton); //button to return to  the home page
+		this.getPanel3().add(title); //label for title of page
+		this.getPanel1().add(inputFN); //label for student first name
+		this.getPanel1().add(firstName); //The text field for student's first name
+		this.getPanel1().add(inputLN); //label for student last name
+		this.getPanel1().add(lastName); //The text field for student's last name
+		this.getPanel2().add(submit);
 		
 	}//end studentInput
+	
+	/* public void saveFile() {
+		try {
+			Path path = Paths.get("StudentEnrollment.txt");
+			if(!Files.exists(path)){
+				Files.createFile(path);
+				System.out.println("Just Created a File");
+			}
+			String fName = firstName.getText();
+			String lName = lastName.getText();
+			
+			String inputFormStr = "<form>" + "<label>" + firstName + "</label>" +"<label>" + lastName+"</label>"+ "</form>";
+			
+			Files.write(path, inputFormStr.getBytes(StandardCharsets.UTF_8));
+		} catch(IOException e) {
+			System.out.println("Error: "+e.getMessage());
+		}
+		
+	}//end saveFile */
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		this.getPanel1().remove(button1);
-		this.getPanel2().remove(button2);
-		this.studentInput();
-		
-		
-	}//end actionPerformed
+		if(e.getSource() == addStudent) {
+			this.studentInput();
+			addStudent.setVisible(false);
+			button3.setVisible(false);
+			homeButton.setVisible(true);
+			firstName.setVisible(true);
+			lastName.setVisible(true);
+			inputFN.setVisible(true);
+			inputLN.setVisible(true);
+			submit.setVisible(true);
+			
+		}
+		else if (e.getSource() == homeButton) {
+			this.homeScreen();
+			homeButton.setVisible(false);
+			addStudent.setVisible(true);
+			button3.setVisible(true);
+			firstName.setVisible(false);
+			lastName.setVisible(false);
+			inputFN.setVisible(false);
+			inputLN.setVisible(false);
+			submit.setVisible(false);
+			
+		}
+		/* else if (e.getSource() == submit) {
+			this.saveFile();
+		} */
+	}//end actionPerformed 
 	
 	
-
 }//end class
