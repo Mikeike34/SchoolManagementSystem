@@ -1,47 +1,57 @@
 package GUI;
 
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import java.util.Scanner;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 
 
 
+
 public class Frame extends JFrame implements ActionListener {
-	
+	//all panels
 	JPanel panel1 = new JPanel(); //panel on top left of frame
 	JPanel panel2 = new JPanel(); //panel on top right of frame
 	JPanel panel3 = new JPanel(); //panel on bottom of frame spanning the entire width of frame
 	
+	//all labels
 	JLabel title = new JLabel(); //Used for the title on any page
 	JLabel inputFN = new JLabel(); //label for inputing first name on Student Input page
 	JLabel inputLN = new JLabel(); //label for inputting last name on Student Input page
 	
+	//all buttons
 	JButton addStudent = new JButton(); //button to add a student. This button should only exist on the home page.
 	JButton homeButton = new JButton(); //button to get back to the home page. This button should not exist on the home page. 
-	JButton enrollment = new JButton(); 
+	JButton studentList = new JButton(); 
 	JButton submit = new JButton(); //button used to submit student data on the Student Input page
 	
+	//all ImageIcons
 	ImageIcon home = new ImageIcon("Home.png"); //image for the home button
 	
+	//all text fields
 	JTextField firstName = new JTextField();
 	JTextField lastName = new JTextField();
+	
+	//all text ares
+	JTextArea list = new JTextArea(5,40);
+	
+	
 	
 	
 	
@@ -61,6 +71,9 @@ public class Frame extends JFrame implements ActionListener {
 		//JPanel panel3 = new JPanel(); //panel on top of frame spanning the entire width of frame
 		panel3.setBounds(0,0,500,250); //x, y, width, height
 		panel3.setBackground(new Color(253,253,150));
+		panel3.setLayout(new FlowLayout(FlowLayout.CENTER,10,10));
+		
+		
 		
 		
 		this.setSize(500,500);
@@ -76,8 +89,9 @@ public class Frame extends JFrame implements ActionListener {
 		//components on each panel
 		this.getPanel1().add(addStudent); //adding the addStudent button to panel 1 (the bottom left panel)
 		addStudent.addActionListener(this);
-		this.getPanel2().add(enrollment);
-		this.getPanel3().add(title); //adding lbel1 to top of the frame(panel 3)
+		this.getPanel2().add(studentList); //button to read enrollment list
+		studentList.addActionListener(this);
+		//this.getPanel3().add(title); //adding label to top of the frame(panel 3)
 		this.getPanel3().add(homeButton); //button to return to  the home page
 		homeButton.addActionListener(this);
 		this.getPanel3().add(title); //label for title of page
@@ -87,8 +101,13 @@ public class Frame extends JFrame implements ActionListener {
 		this.getPanel1().add(lastName); //The text field for student's last name
 		this.getPanel2().add(submit); //button to save inputed data to a text file
 		submit.addActionListener(this);
+		this.getPanel3().add(list);
+		
+		
+		
 		
 	}//end constructor
+	
 	
 	
 	//getters
@@ -107,17 +126,17 @@ public class Frame extends JFrame implements ActionListener {
 	
 	
 	
-	
-	public void homeScreen(){  //creates a home screen UI
+	//Adjusts components in frame to look and function as a home screen UI
+	public void homeScreen(){  
 		
 		//buttons
 		addStudent.setText("Add Student");
 		addStudent.setBounds(45, 135, 150, 55); //x, y, width, height
 		addStudent.setFocusable(false);
 		
-		enrollment.setText("Place Holder");
-		enrollment.setBounds(45,135,150,55); //x, y ,width, height
-		enrollment.setFocusable(false);
+		studentList.setText("Student List");
+		studentList.setBounds(45,135,150,55); //x, y ,width, height
+		studentList.setFocusable(false);
 		
 		//label
 		title.setText("HOME PAGE");
@@ -130,24 +149,27 @@ public class Frame extends JFrame implements ActionListener {
 		//deciding what is used for Home Screen
 		homeButton.setVisible(false);
 		addStudent.setVisible(true);
-		enrollment.setVisible(true);
+		studentList.setVisible(true);
 		firstName.setVisible(false);
 		lastName.setVisible(false);
 		inputFN.setVisible(false);
 		inputLN.setVisible(false);
 		submit.setVisible(false);
+		list.setVisible(false);
 		
 		
-		//adding to panels
-		/*this.getPanel1().add(addStudent); //adding the addStudent button to panel 1 (the bottom left panel)
-		this.getPanel2().add(enrollment);
-		this.getPanel3().add(title); //adding lbel1 to top of the frame(panel 3) */
+		//ensures UI is displaying correctly
+		this.repaint();
+		this.revalidate();
+		
 		
 	}//end homeScreen
 	
 	
 	
-	public void studentInput() {  //brings user to a page to input student data
+	
+	//Adjusts components in frame to look and function as a Student Input UI
+	public void studentInput() {  
 		//title on UI page
 		title.setText("Input New Student Data");
 		title.setFont(new Font("Garamond", Font.PLAIN, 25));
@@ -187,21 +209,30 @@ public class Frame extends JFrame implements ActionListener {
 		
 		//deciding what is used for Student Input page
 		addStudent.setVisible(false);
-		enrollment.setVisible(false);
+		studentList.setVisible(false);
 		homeButton.setVisible(true);
 		firstName.setVisible(true);
 		lastName.setVisible(true);
 		inputFN.setVisible(true);
 		inputLN.setVisible(true);
 		submit.setVisible(true);
+		list.setVisible(false);
+		
+		
+		//ensures UI is displaying correctly
+		this.repaint(); 
+		this.revalidate();
 		
 	}//end studentInput
+	
+	
+	File txtFile = new File("studentList.txt");
+	
 	
 	//creates a text file and writes student info to file. If file already exists, it will add to existing file
 	public void file() {
 		
 		try {
-			File txtFile = new File("Enrollment.txt");
 			if (txtFile.createNewFile()) {
 				System.out.println("File created: "+ txtFile.getName());
 			}
@@ -212,7 +243,7 @@ public class Frame extends JFrame implements ActionListener {
 			System.out.println("Error: "+e.getMessage());
 		}
 		try {
-			FileWriter myWriter = new FileWriter("Enrollment.txt", true);
+			FileWriter myWriter = new FileWriter("studentList.txt", true);
 			String fName = firstName.getText();
 			String lName = lastName.getText();
 			myWriter.write(fName +" "+ lName+"\n");
@@ -224,6 +255,56 @@ public class Frame extends JFrame implements ActionListener {
 		}
 		
 	}//end file
+	
+	public void studentList() {
+		
+		title.setText("Current Students");
+		
+		homeButton.setPreferredSize(new Dimension(40,40)); //x,y,width,height
+		homeButton.setFocusable(false);
+		homeButton.setIcon(home);
+		
+		addStudent.setVisible(false);
+		studentList.setVisible(false);
+		homeButton.setVisible(true);
+		firstName.setVisible(false);
+		lastName.setVisible(false);
+		inputFN.setVisible(false);
+		inputLN.setVisible(false);
+		submit.setVisible(false);
+		list.setVisible(true);
+		
+		
+		try {
+			Scanner myReader = new Scanner(txtFile);
+			while(myReader.hasNextLine()) {
+				String data = myReader.nextLine();
+				System.out.println(data); //displays student list in console
+				list.append(data + "\n"); //displays student list in text area *append allows each line to be added onto the previous line instead of overwriting the previous line.
+			}
+			myReader.close();
+		}catch(IOException e) {
+			System.out.println("Error: "+ e.getMessage());
+		}
+		
+		this.repaint(); 
+		this.revalidate();
+		
+	}//end studentList
+	
+	
+	//gets info about the file created through the file() method.
+	public void getFileInfo() {
+		
+		if(txtFile.exists()) {
+			System.out.println("File name: "+ txtFile.getName());
+			System.out.println("Absolute path: "+ txtFile.getAbsolutePath());
+			System.out.println("File size in bytes: "+ txtFile.length());
+		}
+		else {
+			System.out.println("The file does not exist");
+		}
+	}//end getFileInfo
 	
 
 	@Override
@@ -238,11 +319,16 @@ public class Frame extends JFrame implements ActionListener {
 		}
 		 else if (e.getSource() == submit) {
 			this.file();
-			firstName.setText("");
-			lastName.setText("");
+			firstName.setText(""); //sets firstName text field to blank
+			lastName.setText(""); //sets lastName text field to blank
 			this.homeScreen(); //after writing a file or adding to an existing file, brings user back to home screen
 			
-		} 
+		}
+		 else if (e.getSource()== studentList) {
+			 list.setText("");
+			 list.append("Student Name            " + "        Student ID Number           "+ "        Student Email"+"\n");
+			 this.studentList();
+		 }
 	}//end actionPerformed 
 	
 	
