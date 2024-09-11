@@ -1,11 +1,10 @@
 package GUI;
 
 import java.awt.Color;
-import java.awt.ComponentOrientation;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -49,7 +48,9 @@ public class Frame extends JFrame implements ActionListener {
 	JTextField lastName = new JTextField();
 	
 	//all text ares
-	JTextArea list = new JTextArea(5,40);
+	JTextArea list = new JTextArea(23,45);
+	JTextArea inputFeedback = new JTextArea(5,20);
+	JTextArea homeInfo = new JTextArea(5,40);
 	
 	
 	
@@ -102,9 +103,23 @@ public class Frame extends JFrame implements ActionListener {
 		this.getPanel2().add(submit); //button to save inputed data to a text file
 		submit.addActionListener(this);
 		this.getPanel3().add(list);
+		this.getPanel3().add(inputFeedback);
+		this.getPanel3().add(homeInfo);
 		
-		
-		
+		//visibility of base frame
+		addStudent.setVisible(false);
+		studentList.setVisible(false);
+		homeButton.setVisible(false);
+		firstName.setVisible(false);
+		lastName.setVisible(false);
+		inputFN.setVisible(false);
+		inputLN.setVisible(false);
+		submit.setVisible(false);
+		list.setVisible(false);
+		inputFeedback.setVisible(false);
+		homeInfo.setVisible(false);
+		panel1.setVisible(false);
+		panel2.setVisible(false);
 		
 	}//end constructor
 	
@@ -146,6 +161,14 @@ public class Frame extends JFrame implements ActionListener {
 		title.setBackground(new Color(253,253,150)); //sets the background color of the label
 		title.setOpaque(true); //allows the background to be seen
 		
+		//textArea
+		homeInfo.setBackground(new Color(253,253,150));
+		homeInfo.setEditable(false);
+		homeInfo.setText("                       Enroll a new student by clicking 'Add Student'\n"+
+				"\n                                                              or\n"+
+				"\n                    See currently enrolled students by clicking 'Student List'");
+		
+		
 		//deciding what is used for Home Screen
 		homeButton.setVisible(false);
 		addStudent.setVisible(true);
@@ -156,6 +179,10 @@ public class Frame extends JFrame implements ActionListener {
 		inputLN.setVisible(false);
 		submit.setVisible(false);
 		list.setVisible(false);
+		inputFeedback.setVisible(false);
+		homeInfo.setVisible(true);
+		panel1.setVisible(true);
+		panel2.setVisible(true);
 		
 		
 		//ensures UI is displaying correctly
@@ -178,6 +205,10 @@ public class Frame extends JFrame implements ActionListener {
 		title.setForeground(Color.black);
 		title.setBackground(new Color(253,253,150));
 		title.setOpaque(true);
+		
+		//text area on page
+		inputFeedback.setBackground(new Color(253,253,150));
+		inputFeedback.setEditable(false);
 		
 		//buttons on Student Input Page
 		homeButton.setPreferredSize(new Dimension(40,40)); //x,y,width,height
@@ -217,6 +248,10 @@ public class Frame extends JFrame implements ActionListener {
 		inputLN.setVisible(true);
 		submit.setVisible(true);
 		list.setVisible(false);
+		inputFeedback.setVisible(true);
+		homeInfo.setVisible(false);
+		panel1.setVisible(true);
+		panel2.setVisible(true);
 		
 		
 		//ensures UI is displaying correctly
@@ -243,12 +278,14 @@ public class Frame extends JFrame implements ActionListener {
 			System.out.println("Error: "+e.getMessage());
 		}
 		try {
+			Student stud = new Student(firstName.getText(),lastName.getText());
 			FileWriter myWriter = new FileWriter("studentList.txt", true);
-			String fName = firstName.getText();
-			String lName = lastName.getText();
-			myWriter.write(fName +" "+ lName+"\n");
+			//String fName = firstName.getText();
+			//String lName = lastName.getText();
+			myWriter.write(stud.toString()+"\n"+"\n");
 			myWriter.close();
 			System.out.println("Successfully wrote to the file.");
+			inputFeedback.setText("Enrolled Student.\n"+"\nYou can add another student"+"\n                       or"+"\nReturn to the home page");
 			
 		}catch(IOException e) {
 			System.out.println("Error: "+e.getMessage());
@@ -264,6 +301,8 @@ public class Frame extends JFrame implements ActionListener {
 		homeButton.setFocusable(false);
 		homeButton.setIcon(home);
 		
+		list.setEditable(false); //ensures user cannot type here.
+		
 		addStudent.setVisible(false);
 		studentList.setVisible(false);
 		homeButton.setVisible(true);
@@ -273,13 +312,16 @@ public class Frame extends JFrame implements ActionListener {
 		inputLN.setVisible(false);
 		submit.setVisible(false);
 		list.setVisible(true);
-		
+		inputFeedback.setVisible(false);
+		homeInfo.setVisible(false);
+		panel1.setVisible(false);
+		panel2.setVisible(false);
 		
 		try {
 			Scanner myReader = new Scanner(txtFile);
 			while(myReader.hasNextLine()) {
 				String data = myReader.nextLine();
-				System.out.println(data); //displays student list in console
+				//System.out.println(data); //displays student list in console
 				list.append(data + "\n"); //displays student list in text area *append allows each line to be added onto the previous line instead of overwriting the previous line.
 			}
 			myReader.close();
@@ -291,6 +333,8 @@ public class Frame extends JFrame implements ActionListener {
 		this.revalidate();
 		
 	}//end studentList
+	
+	
 	
 	
 	//gets info about the file created through the file() method.
@@ -321,12 +365,11 @@ public class Frame extends JFrame implements ActionListener {
 			this.file();
 			firstName.setText(""); //sets firstName text field to blank
 			lastName.setText(""); //sets lastName text field to blank
-			this.homeScreen(); //after writing a file or adding to an existing file, brings user back to home screen
+			//this.homeScreen(); //after writing a file or adding to an existing file, brings user back to home screen
 			
 		}
 		 else if (e.getSource()== studentList) {
 			 list.setText("");
-			 list.append("Student Name            " + "        Student ID Number           "+ "        Student Email"+"\n");
 			 this.studentList();
 		 }
 	}//end actionPerformed 

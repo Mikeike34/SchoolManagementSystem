@@ -14,6 +14,9 @@ public class TestGUI {
 		window.homeScreen();
 		
 		
+		//use this method to get file path of text file created when using this program
+		//window.getFileInfo();
+		
 
 	}//end main
 	
