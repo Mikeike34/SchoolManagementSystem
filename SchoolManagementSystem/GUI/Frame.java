@@ -1,16 +1,25 @@
 package GUI;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -39,6 +48,8 @@ public class Frame extends JFrame implements ActionListener {
 	JButton homeButton = new JButton(); //button to get back to the home page. This button should not exist on the home page. 
 	JButton studentList = new JButton(); 
 	JButton submit = new JButton(); //button used to submit student data on the Student Input page
+	JButton studentSearch = new JButton(); //button used to bring user to student search page
+	JButton search = new JButton(); //button used to search for a specific student on the Student Search Page
 	
 	//all ImageIcons
 	ImageIcon home = new ImageIcon("Home.png"); //image for the home button
@@ -75,8 +86,6 @@ public class Frame extends JFrame implements ActionListener {
 		panel3.setLayout(new FlowLayout(FlowLayout.CENTER,10,10));
 		
 		
-		
-		
 		this.setSize(500,500);
 		this.setVisible(true);
 		this.setTitle("School Management System");
@@ -90,6 +99,8 @@ public class Frame extends JFrame implements ActionListener {
 		//components on each panel
 		this.getPanel1().add(addStudent); //adding the addStudent button to panel 1 (the bottom left panel)
 		addStudent.addActionListener(this);
+		this.getPanel1().add(studentSearch);//Student search button on the home page to bring user to the student search page. 
+		studentSearch.addActionListener(this);
 		this.getPanel2().add(studentList); //button to read enrollment list
 		studentList.addActionListener(this);
 		//this.getPanel3().add(title); //adding label to top of the frame(panel 3)
@@ -102,9 +113,12 @@ public class Frame extends JFrame implements ActionListener {
 		this.getPanel1().add(lastName); //The text field for student's last name
 		this.getPanel2().add(submit); //button to save inputed data to a text file
 		submit.addActionListener(this);
+		this.getPanel2().add(search); //button to search for a student in the students array
+		search.addActionListener(this);
 		this.getPanel3().add(list);
 		this.getPanel3().add(inputFeedback);
 		this.getPanel3().add(homeInfo);
+		
 		
 		//visibility of base frame
 		addStudent.setVisible(false);
@@ -120,6 +134,8 @@ public class Frame extends JFrame implements ActionListener {
 		homeInfo.setVisible(false);
 		panel1.setVisible(false);
 		panel2.setVisible(false);
+		search.setVisible(false);
+		studentSearch.setVisible(false);
 		
 	}//end constructor
 	
@@ -148,6 +164,10 @@ public class Frame extends JFrame implements ActionListener {
 		addStudent.setText("Add Student");
 		addStudent.setBounds(45, 135, 150, 55); //x, y, width, height
 		addStudent.setFocusable(false);
+		
+		studentSearch.setText("Find Student");
+		studentSearch.setBounds(45,200,150,55);
+		studentSearch.setFocusable(false);
 		
 		studentList.setText("Student List");
 		studentList.setBounds(45,135,150,55); //x, y ,width, height
@@ -183,6 +203,8 @@ public class Frame extends JFrame implements ActionListener {
 		homeInfo.setVisible(true);
 		panel1.setVisible(true);
 		panel2.setVisible(true);
+		search.setVisible(false);
+		studentSearch.setVisible(true);
 		
 		
 		//ensures UI is displaying correctly
@@ -252,6 +274,8 @@ public class Frame extends JFrame implements ActionListener {
 		homeInfo.setVisible(false);
 		panel1.setVisible(true);
 		panel2.setVisible(true);
+		search.setVisible(false);
+		studentSearch.setVisible(false);
 		
 		
 		//ensures UI is displaying correctly
@@ -263,6 +287,8 @@ public class Frame extends JFrame implements ActionListener {
 	
 	File txtFile = new File("studentList.txt");
 	
+	private Student[] students  = new Student[30]; //an array of student objects
+	int counter = 0; //a place holder for the current amount of students in the array
 	
 	//creates a text file and writes student info to file. If file already exists, it will add to existing file
 	public void file() {
@@ -279,9 +305,12 @@ public class Frame extends JFrame implements ActionListener {
 		}
 		try {
 			Student stud = new Student(firstName.getText(),lastName.getText());
+			for(int i = 0; i < students.length; i++) { //for loop to set counter variable equal to the amount of Students are currently in the array.
+				if(students[i] != null)
+					counter++;
+			}
+			students[counter] = stud; //adds each student to an empty slot in the array.
 			FileWriter myWriter = new FileWriter("studentList.txt", true);
-			//String fName = firstName.getText();
-			//String lName = lastName.getText();
 			myWriter.write(stud.toString()+"\n"+"\n");
 			myWriter.close();
 			System.out.println("Successfully wrote to the file.");
@@ -292,6 +321,48 @@ public class Frame extends JFrame implements ActionListener {
 		}
 		
 	}//end file
+	
+	
+	
+	File orderedTxtFile = new File("newStudentList.txt");
+	
+	
+	
+	private void search()throws IOException{
+		
+		FileReader fileReader = new FileReader("studentList.txt");
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		List<String> lines = new ArrayList<String>();
+		String line = null;
+		while((line = bufferedReader.readLine()) != null) {
+			lines.add(line);
+		}
+		bufferedReader.close();
+		
+		Collections.sort(lines, Collator.getInstance());
+		
+		FileWriter writer = new FileWriter("newStudentList.txt");
+		try {
+			if (orderedTxtFile.createNewFile()) {
+				System.out.println("File created: "+ orderedTxtFile.getName());
+				for(String str: lines) {
+					writer.write(str + "\r\n");
+				}
+			}
+			else {
+				//add code here that overwrites newStudentList.txt if it already exists...
+			}
+		}catch(IOException e) {
+			System.out.println("Error: "+e.getMessage());
+		}
+		
+		writer.close();
+		
+		//add code here to search for a specific line of information on newStudentList (Binary Search?)
+		
+
+	}//end search
+	
 	
 	public void studentList() {
 		
@@ -316,6 +387,8 @@ public class Frame extends JFrame implements ActionListener {
 		homeInfo.setVisible(false);
 		panel1.setVisible(false);
 		panel2.setVisible(false);
+		search.setVisible(false);
+		studentSearch.setVisible(false);
 		
 		try {
 			Scanner myReader = new Scanner(txtFile);
@@ -334,6 +407,73 @@ public class Frame extends JFrame implements ActionListener {
 		
 	}//end studentList
 	
+	public void studentSearchPage() {
+		//title on UI page
+				title.setText("Student Search");
+				title.setFont(new Font("Garamond", Font.PLAIN, 25));
+				title.setBounds(getBounds());
+				title.setBounds(125,0,300,200);
+				title.setForeground(Color.black);
+				title.setBackground(new Color(253,253,150));
+				title.setOpaque(true);
+				
+				//text area on page
+				inputFeedback.setBackground(new Color(253,253,150));
+				inputFeedback.setEditable(false);
+				
+				//buttons on Student Input Page
+				homeButton.setPreferredSize(new Dimension(40,40)); //x,y,width,height
+				homeButton.setFocusable(false);
+				homeButton.setIcon(home);
+				
+				search.setText("Search");
+				search.setLocation(0,200);
+				search.setPreferredSize(new Dimension(90,30));
+				
+				
+				//Labels
+				inputFN.setText("Enter Student's First Name: ");
+				inputFN.setForeground(Color.black);
+				inputFN.setOpaque(true);
+				inputFN.setBackground(new Color(253,253,150));
+				
+				
+				inputLN.setText("Enter Student's Last Name: ");
+				inputLN.setForeground(Color.black);
+				inputLN.setOpaque(true);
+				inputLN.setBackground(new Color(253,253,150));
+				
+				
+				//text fields on Student Input page
+				firstName.setPreferredSize(new Dimension(150,40));
+				lastName.setPreferredSize(new Dimension(150,40));
+				
+				
+				//deciding what is used for Student Input page
+				addStudent.setVisible(false);
+				studentList.setVisible(false);
+				homeButton.setVisible(true);
+				firstName.setVisible(true);
+				lastName.setVisible(true);
+				inputFN.setVisible(true);
+				inputLN.setVisible(true);
+				submit.setVisible(false);
+				list.setVisible(false);
+				inputFeedback.setVisible(true);
+				homeInfo.setVisible(false);
+				panel1.setVisible(true);
+				panel2.setVisible(true);
+				search.setVisible(true);
+				studentSearch.setVisible(false);
+				
+				
+				
+				//ensures UI is displaying correctly
+				this.repaint(); 
+				this.revalidate();
+		
+	}//end studentSearchPage
+	
 	
 	
 	
@@ -345,10 +485,7 @@ public class Frame extends JFrame implements ActionListener {
 			System.out.println("Absolute path: "+ txtFile.getAbsolutePath());
 			System.out.println("File size in bytes: "+ txtFile.length());
 		}
-		else {
-			System.out.println("The file does not exist");
-		}
-	}//end getFileInfo
+	}
 	
 
 	@Override
@@ -366,11 +503,20 @@ public class Frame extends JFrame implements ActionListener {
 			firstName.setText(""); //sets firstName text field to blank
 			lastName.setText(""); //sets lastName text field to blank
 			//this.homeScreen(); //after writing a file or adding to an existing file, brings user back to home screen
+			//System.out.println(Arrays.toString(students));
 			
 		}
 		 else if (e.getSource()== studentList) {
 			 list.setText("");
 			 this.studentList();
+		 }
+		 else if(e.getSource() == studentSearch) {
+			 this.studentSearchPage();
+		 }
+		 else if(e.getSource() == search) {
+			// this.search();
+			 firstName.setText("");
+			 lastName.setText("");
 		 }
 	}//end actionPerformed 
 	

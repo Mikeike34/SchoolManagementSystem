@@ -1,7 +1,6 @@
 package GUI;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class Student {
@@ -15,31 +14,20 @@ public class Student {
 	private String last;
 	private String email;
 	
-	private List<Student> students = new ArrayList<>();
-	
 	
 	Student(String fName, String lName){
 		this.first = fName;
 		this.last = lName;
 		idNum = r.nextInt(high - low)+ low;
 		email = first + last + "@School.edu";
-		this.addToList();
+		
 	}//end student
 	
 	
-	private void addToList() {
-		students.add(this);
-	}//end addToList
 	
-	/*public void printList() {
-		students.stream().forEach(System.out::println);
-	}
-	public void print(List<Student> list) {
-		for(Student elem : list) {
-			System.out.println(elem + "\n");
-		}
-	} */
-
+	
+	
+	
 //getters and setters for student information
 	public int getIdNum() {
 		return idNum;
