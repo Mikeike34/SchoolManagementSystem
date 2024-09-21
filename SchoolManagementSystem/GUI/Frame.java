@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -304,7 +305,7 @@ public class Frame extends JFrame implements ActionListener {
 			System.out.println("Error: "+e.getMessage());
 		}
 		try {
-			Student stud = new Student(firstName.getText(),lastName.getText());
+			Student stud = new Student(lastName.getText(),firstName.getText());
 			for(int i = 0; i < students.length; i++) { //for loop to set counter variable equal to the amount of Students are currently in the array.
 				if(students[i] != null)
 					counter++;
@@ -324,47 +325,19 @@ public class Frame extends JFrame implements ActionListener {
 	
 	
 	
-	File orderedTxtFile = new File("newStudentList.txt");
-	
-	
 	
 	private void search()throws IOException{
 		
-		FileReader fileReader = new FileReader("studentList.txt");
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		List<String> lines = new ArrayList<String>();
-		String line = null;
-		while((line = bufferedReader.readLine()) != null) {
-			lines.add(line);
-		}
-		bufferedReader.close();
-		
-		Collections.sort(lines, Collator.getInstance());
-		
-		FileWriter writer = new FileWriter("newStudentList.txt");
-		try {
-			if (orderedTxtFile.createNewFile()) {
-				System.out.println("File created: "+ orderedTxtFile.getName());
-				for(String str: lines) {
-					writer.write(str + "\r\n");
-				}
-			}
-			else {
-				//add code here that overwrites newStudentList.txt if it already exists...
-			}
-		}catch(IOException e) {
-			System.out.println("Error: "+e.getMessage());
-		}
-		
-		writer.close();
-		
-		//add code here to search for a specific line of information on newStudentList (Binary Search?)
-		
-
+		//add code to search for a last name and return a list of all students with that last name
+	
 	}//end search
 	
 	
-	public void studentList() {
+	
+	
+	File orderedTxtFile = new File("newStudentList.txt");
+	
+	public void studentList() throws IOException {
 		
 		title.setText("Current Students");
 		
@@ -390,17 +363,55 @@ public class Frame extends JFrame implements ActionListener {
 		search.setVisible(false);
 		studentSearch.setVisible(false);
 		
-		try {
-			Scanner myReader = new Scanner(txtFile);
-			while(myReader.hasNextLine()) {
-				String data = myReader.nextLine();
-				//System.out.println(data); //displays student list in console
-				list.append(data + "\n"); //displays student list in text area *append allows each line to be added onto the previous line instead of overwriting the previous line.
-			}
-			myReader.close();
-		}catch(IOException e) {
-			System.out.println("Error: "+ e.getMessage());
-		}
+		//Reading student list and ordering it into a new text file. 
+				BufferedReader bufferedReader = new BufferedReader(new FileReader(txtFile));
+				List<String> lines = new ArrayList<String>();
+				String line;
+				while((line = bufferedReader.readLine()) != null) {
+					if(line.trim().length() > 0) {
+						lines.add(line);
+						line = bufferedReader.readLine();
+					}
+				}
+				
+				bufferedReader.close();
+				Collections.sort(lines, Collator.getInstance());
+				
+				try {
+					if (orderedTxtFile.createNewFile()) {
+						System.out.println("File created: "+ orderedTxtFile.getName());
+						}
+					else {
+						System.out.println("File already exists. File Overwritten.");
+					}
+					
+				}catch(IOException e) {
+					System.out.println("Error: "+e.getMessage());
+				}
+				
+				try(BufferedWriter bw = new BufferedWriter(new FileWriter(orderedTxtFile))) {
+						for(String str : lines) {
+							bw.write(str + "\n");
+							bw.newLine();
+						}
+						bw.close();
+				}catch(IOException e){
+					System.out.println("Error: "+e.getMessage());
+				}
+				
+				//reading ordered list of students and displaying it to the UI
+				try {
+					Scanner myReader = new Scanner(orderedTxtFile);
+					while(myReader.hasNextLine()) {
+						String data = myReader.nextLine();
+						//System.out.println(data); //displays student list in console
+						list.append(data + "\n"); //displays student list in text area *append allows each line to be added onto the previous line instead of overwriting the previous line.
+					}
+					myReader.close();
+				}catch(IOException e) {
+					System.out.println("Error: "+ e.getMessage());
+				}
+		
 		
 		this.repaint(); 
 		this.revalidate();
@@ -508,13 +519,23 @@ public class Frame extends JFrame implements ActionListener {
 		}
 		 else if (e.getSource()== studentList) {
 			 list.setText("");
-			 this.studentList();
+			 try {
+				this.studentList();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		 }
 		 else if(e.getSource() == studentSearch) {
 			 this.studentSearchPage();
 		 }
 		 else if(e.getSource() == search) {
-			// this.search();
+			try {
+				this.search();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			 firstName.setText("");
 			 lastName.setText("");
 		 }

@@ -10,14 +10,14 @@ public class Student {
 	private int low = 100000;
 	private int high = 999999;
 	private int idNum;
-	private String first;
 	private String last;
+	private String first;
 	private String email;
 	
 	
-	Student(String fName, String lName){
-		this.first = fName;
+	Student(String lName, String fName){
 		this.last = lName;
+		this.first = fName;
 		idNum = r.nextInt(high - low)+ low;
 		email = first + last + "@School.edu";
 		
@@ -70,7 +70,7 @@ public class Student {
 
 	@Override
 	public String toString() {
-		return " "+first + " " + last + "   ID Number: "+ idNum + "   Email: "+ email;
+		return "  "+last + " " + first + "   ID Number: "+ idNum + "   Email: "+ email;
 	}
 	
 	
