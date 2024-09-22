@@ -1,16 +1,17 @@
 package GUI;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class Student {
+public class Student implements Serializable {
 	
 	
 	Random r = new Random();
 	private int low = 100000;
 	private int high = 999999;
 	private int idNum;
-	private String last;
+	public String last;
 	private String first;
 	private String email;
 	

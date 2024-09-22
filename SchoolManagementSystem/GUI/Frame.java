@@ -9,16 +9,25 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
@@ -43,6 +52,7 @@ public class Frame extends JFrame implements ActionListener {
 	JLabel title = new JLabel(); //Used for the title on any page
 	JLabel inputFN = new JLabel(); //label for inputing first name on Student Input page
 	JLabel inputLN = new JLabel(); //label for inputting last name on Student Input page
+	JLabel caseSensitive = new JLabel(); // label for warning user for case sensitivity
 	
 	//all buttons
 	JButton addStudent = new JButton(); //button to add a student. This button should only exist on the home page.
@@ -116,6 +126,7 @@ public class Frame extends JFrame implements ActionListener {
 		submit.addActionListener(this);
 		this.getPanel2().add(search); //button to search for a student in the students array
 		search.addActionListener(this);
+		this.getPanel2().add(caseSensitive);
 		this.getPanel3().add(list);
 		this.getPanel3().add(inputFeedback);
 		this.getPanel3().add(homeInfo);
@@ -137,6 +148,7 @@ public class Frame extends JFrame implements ActionListener {
 		panel2.setVisible(false);
 		search.setVisible(false);
 		studentSearch.setVisible(false);
+		caseSensitive.setVisible(false);
 		
 	}//end constructor
 	
@@ -186,6 +198,7 @@ public class Frame extends JFrame implements ActionListener {
 		homeInfo.setBackground(new Color(253,253,150));
 		homeInfo.setEditable(false);
 		homeInfo.setText("                       Enroll a new student by clicking 'Add Student'\n"+
+				"\n                       Find a current student by clicking 'Find Student'\n"+
 				"\n                                                              or\n"+
 				"\n                    See currently enrolled students by clicking 'Student List'");
 		
@@ -206,6 +219,7 @@ public class Frame extends JFrame implements ActionListener {
 		panel2.setVisible(true);
 		search.setVisible(false);
 		studentSearch.setVisible(true);
+		caseSensitive.setVisible(false);
 		
 		
 		//ensures UI is displaying correctly
@@ -258,8 +272,9 @@ public class Frame extends JFrame implements ActionListener {
 		
 		//text fields on Student Input page
 		firstName.setPreferredSize(new Dimension(150,40));
+		firstName.setText("");
 		lastName.setPreferredSize(new Dimension(150,40));
-		
+		lastName.setText("");
 		
 		//deciding what is used for Student Input page
 		addStudent.setVisible(false);
@@ -277,6 +292,7 @@ public class Frame extends JFrame implements ActionListener {
 		panel2.setVisible(true);
 		search.setVisible(false);
 		studentSearch.setVisible(false);
+		caseSensitive.setVisible(false);
 		
 		
 		//ensures UI is displaying correctly
@@ -288,8 +304,8 @@ public class Frame extends JFrame implements ActionListener {
 	
 	File txtFile = new File("studentList.txt");
 	
-	private Student[] students  = new Student[30]; //an array of student objects
-	int counter = 0; //a place holder for the current amount of students in the array
+	
+	List<Student> students = new ArrayList<>(); //an ArrayList of student objects
 	
 	//creates a text file and writes student info to file. If file already exists, it will add to existing file
 	public void file() {
@@ -304,18 +320,16 @@ public class Frame extends JFrame implements ActionListener {
 		}catch(IOException e) {
 			System.out.println("Error: "+e.getMessage());
 		}
+		
 		try {
-			Student stud = new Student(lastName.getText(),firstName.getText());
-			for(int i = 0; i < students.length; i++) { //for loop to set counter variable equal to the amount of Students are currently in the array.
-				if(students[i] != null)
-					counter++;
-			}
-			students[counter] = stud; //adds each student to an empty slot in the array.
+			Student stud= new Student(lastName.getText(),firstName.getText());
+			students.add(stud);
 			FileWriter myWriter = new FileWriter("studentList.txt", true);
 			myWriter.write(stud.toString()+"\n"+"\n");
 			myWriter.close();
 			System.out.println("Successfully wrote to the file.");
 			inputFeedback.setText("Enrolled Student.\n"+"\nYou can add another student"+"\n                       or"+"\nReturn to the home page");
+			
 			
 		}catch(IOException e) {
 			System.out.println("Error: "+e.getMessage());
@@ -325,19 +339,65 @@ public class Frame extends JFrame implements ActionListener {
 	
 	
 	
-	
-	private void search()throws IOException{
+	//search method will return all students with the last name searched.
+	private int search(String last,String first)throws IOException{
 		
-		//add code to search for a last name and return a list of all students with that last name
+		sort(lines);
+		
+		Iterator<String> iter = lines.iterator();
+		while(iter.hasNext()) {
+			String s = iter.next();
+			if(s.contains(last)&&s.contains(first)){
+				return lines.indexOf(s);
+			}
+			
+		}//end while
 	
+		return -1;
+		
 	}//end search
 	
 	
 	
 	
-	File orderedTxtFile = new File("newStudentList.txt");
+	private void searchResult() throws IOException {
+		int index = search(lastName.getText(),firstName.getText());
+		if(index >= 0) {
+			list.append(lines.get(index)+"\n");
+		}
+		else {
+			list.append(" Student is not enrolled.");
+		}
+		
+	}//end searchResult
+	
+	
+	
+	
+	List<String> lines = new ArrayList<String>();
+	
+	//sort method reads the list of enrolled students and sorts it into a new List.
+	private void sort(List<String> lines) throws IOException{
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(txtFile));
+		String line;
+		while((line = bufferedReader.readLine()) != null) {
+			if(line.trim().length() > 0) {
+				lines.add(line);
+				line = bufferedReader.readLine();
+			}
+		}
+		bufferedReader.close();
+		Collections.sort(lines, Collator.getInstance());
+		
+		
+	}//end sort
+	
+	
+	
+	File orderedTxtFile = new File("newStudentList.txt"); 
 	
 	public void studentList() throws IOException {
+		
 		
 		title.setText("Current Students");
 		
@@ -346,6 +406,7 @@ public class Frame extends JFrame implements ActionListener {
 		homeButton.setIcon(home);
 		
 		list.setEditable(false); //ensures user cannot type here.
+		list.setText("");
 		
 		addStudent.setVisible(false);
 		studentList.setVisible(false);
@@ -362,21 +423,10 @@ public class Frame extends JFrame implements ActionListener {
 		panel2.setVisible(false);
 		search.setVisible(false);
 		studentSearch.setVisible(false);
+		caseSensitive.setVisible(false);
 		
 		//Reading student list and ordering it into a new text file. 
-				BufferedReader bufferedReader = new BufferedReader(new FileReader(txtFile));
-				List<String> lines = new ArrayList<String>();
-				String line;
-				while((line = bufferedReader.readLine()) != null) {
-					if(line.trim().length() > 0) {
-						lines.add(line);
-						line = bufferedReader.readLine();
-					}
-				}
-				
-				bufferedReader.close();
-				Collections.sort(lines, Collator.getInstance());
-				
+		sort(lines);
 				try {
 					if (orderedTxtFile.createNewFile()) {
 						System.out.println("File created: "+ orderedTxtFile.getName());
@@ -389,7 +439,8 @@ public class Frame extends JFrame implements ActionListener {
 					System.out.println("Error: "+e.getMessage());
 				}
 				
-				try(BufferedWriter bw = new BufferedWriter(new FileWriter(orderedTxtFile))) {
+				try{
+					BufferedWriter bw = new BufferedWriter(new FileWriter(orderedTxtFile));
 						for(String str : lines) {
 							bw.write(str + "\n");
 							bw.newLine();
@@ -411,8 +462,10 @@ public class Frame extends JFrame implements ActionListener {
 				}catch(IOException e) {
 					System.out.println("Error: "+ e.getMessage());
 				}
+				
+				lines.clear();
 		
-		
+				
 		this.repaint(); 
 		this.revalidate();
 		
@@ -454,10 +507,20 @@ public class Frame extends JFrame implements ActionListener {
 				inputLN.setOpaque(true);
 				inputLN.setBackground(new Color(253,253,150));
 				
+				caseSensitive.setText("Reminder: Input is Case Sensitive.");
+				caseSensitive.setFont(new Font("Garamond", Font.ITALIC,  15));
+				caseSensitive.setForeground(Color.black);
+				caseSensitive.setOpaque(true);
+				caseSensitive.setBackground(new Color(253,253,150));
+				
 				
 				//text fields on Student Input page
 				firstName.setPreferredSize(new Dimension(150,40));
+				firstName.setText("");
 				lastName.setPreferredSize(new Dimension(150,40));
+				lastName.setText("");
+				list.setEditable(false);
+				list.setText("");
 				
 				
 				//deciding what is used for Student Input page
@@ -469,13 +532,14 @@ public class Frame extends JFrame implements ActionListener {
 				inputFN.setVisible(true);
 				inputLN.setVisible(true);
 				submit.setVisible(false);
-				list.setVisible(false);
+				list.setVisible(true);
 				inputFeedback.setVisible(true);
 				homeInfo.setVisible(false);
 				panel1.setVisible(true);
 				panel2.setVisible(true);
 				search.setVisible(true);
 				studentSearch.setVisible(false);
+				caseSensitive.setVisible(true);
 				
 				
 				
@@ -525,19 +589,22 @@ public class Frame extends JFrame implements ActionListener {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			 
 		 }
 		 else if(e.getSource() == studentSearch) {
 			 this.studentSearchPage();
 		 }
 		 else if(e.getSource() == search) {
+			 list.setText("");
 			try {
-				this.search();
+				this.searchResult();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			 firstName.setText("");
 			 lastName.setText("");
+			 this.repaint(); 
+			 this.revalidate();
 		 }
 	}//end actionPerformed 
 	
