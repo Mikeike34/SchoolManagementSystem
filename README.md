@@ -1,7 +1,12 @@
 
 # **School Management System**
 
-This is an application to generate ID numbers and mock-emails for students. This application grants users access to a list of students that were inputted into this system. This application creates and saves a text file with a list of students inputted by the user while generating an ID number and a mock-email for each student. Users are able to search for a specific student to access their ID and email. 
+This is an application to generate ID numbers and mock-emails for students. This application grants users access to a list of students that were inputted into this system. 
+
+**This application:**
+- Creates and saves a text file with a list of the students inputted by the user 
+- Generates an ID number and a mock-email for each student.
+- Users are able to search for a specific student to access their ID and email. 
 
 ## Motivation and Importance
 My motivation for creating an application that keeps track of a list of current students was my previous experience as a school teacher.
